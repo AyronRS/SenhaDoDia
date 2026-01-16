@@ -24,9 +24,6 @@ def _ensure_dir():
 
 
 def _migrar_se_existir():
-    """
-    Migra arquivos antigos para o novo local do AppData.
-    """
     _ensure_dir()
 
     candidatos = [
@@ -34,7 +31,6 @@ def _migrar_se_existir():
         (CHAVE_ANTIGA_2, DADOS_ANTIGO_2),
     ]
 
-    # Se já existe no novo local, não mexe
     if os.path.exists(CHAVE_PATH) and os.path.exists(DADOS_PATH):
         return
 
@@ -45,7 +41,6 @@ def _migrar_se_existir():
             if os.path.exists(dados_old) and not os.path.exists(DADOS_PATH):
                 os.replace(dados_old, DADOS_PATH)
         except Exception:
-            # Se falhar, não bloqueia o app
             pass
 
 
@@ -67,24 +62,31 @@ def salvar_dados(
     usuario: str,
     senha: str,
     ultima_senha_capturada: str | None = None,
-    tema_escuro: bool = False
+    tema_escuro: bool = False,
+    primary_light: str | None = None,
+    primary_dark: str | None = None,
 ):
     """
-    Formato (linhas):
-    1) usuario
-    2) senha
-    3) ultima_senha
-    4) tema_escuro (1/0)  <-- novo
+    Formato (6 linhas):
+    0 usuario
+    1 senha
+    2 ultima_senha
+    3 tema_escuro (1/0)
+    4 primary_light (#RRGGBB)
+    5 primary_dark (#RRGGBB)
     """
     try:
         fernet = _get_fernet()
-
-        ultima = ultima_senha_capturada or ""
-        tema = "1" if tema_escuro else "0"
-
-        dados = f"{usuario}\n{senha}\n{ultima}\n{tema}"
+        tema_val = "1" if tema_escuro else "0"
+        dados = "\n".join([
+            usuario or "",
+            senha or "",
+            ultima_senha_capturada or "",
+            tema_val,
+            primary_light or "",
+            primary_dark or "",
+        ])
         cript = fernet.encrypt(dados.encode("utf-8"))
-
         with open(DADOS_PATH, "wb") as f:
             f.write(cript)
     except Exception as e:
@@ -93,13 +95,14 @@ def salvar_dados(
 
 def carregar_dados():
     """
-    Retorna: (usuario, senha, ultima_senha, tema_escuro)
-    Compatível com versões antigas (sem a 4ª linha).
+    Retorna sempre 6 valores:
+    (usuario, senha, ultima_senha, tema_escuro_bool, primary_light, primary_dark)
+    Mantém compatibilidade com arquivos antigos (3 ou 4 linhas).
     """
     try:
         fernet = _get_fernet()
         if not os.path.exists(DADOS_PATH):
-            return None, None, None, False
+            return None, None, None, False, None, None
 
         with open(DADOS_PATH, "rb") as f:
             cript = f.read()
@@ -111,11 +114,13 @@ def carregar_dados():
         senha = (linhas[1].strip() if len(linhas) > 1 else None) or None
         ultima = (linhas[2].strip() if len(linhas) > 2 else None) or None
 
-        tema_escuro = False
-        if len(linhas) > 3:
-            tema_escuro = linhas[3].strip() == "1"
+        tema_raw = (linhas[3].strip() if len(linhas) > 3 else "0")
+        tema_escuro = tema_raw == "1"
 
-        return usuario, senha, ultima, tema_escuro
+        primary_light = (linhas[4].strip() if len(linhas) > 4 else None) or None
+        primary_dark = (linhas[5].strip() if len(linhas) > 5 else None) or None
+
+        return usuario, senha, ultima, tema_escuro, primary_light, primary_dark
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao carregar os dados: {e}")
-        return None, None, None, False
+        return None, None, None, False, None, None
