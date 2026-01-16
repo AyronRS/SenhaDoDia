@@ -2,40 +2,72 @@ import os
 from tkinter import messagebox
 import win32com.client
 
-def modificar_atalho(senha):
-    nome_atalho = "VetorFarma.lnk"
 
-    # Área de trabalho local
-    caminho_area_trabalho = os.path.join(os.path.expanduser("~"), "Desktop")
-    caminho_atalho = os.path.join(caminho_area_trabalho, nome_atalho)
+def _desktop_paths() -> list[str]:
+    user = os.path.expanduser("~")
+    paths = [
+        os.path.join(user, "Desktop"),
+        os.path.join(user, "OneDrive", "Desktop"),
+    ]
+    return [p for p in paths if os.path.isdir(p)]
 
-    # Se não existir, tenta no OneDrive
-    if not os.path.exists(caminho_atalho):
-        caminho_onedrive = os.path.join(os.path.expanduser("~"), "OneDrive")
-        caminho_area_trabalho_onedrive = os.path.join(caminho_onedrive, "Desktop")
-        caminho_atalho = os.path.join(caminho_area_trabalho_onedrive, nome_atalho)
 
-        if not os.path.exists(caminho_atalho):
-            messagebox.showerror("Erro",
-                                 f"Atalho '{nome_atalho}' não encontrado na área de trabalho ou no OneDrive.")
-            return
+def _find_shortcut(nome_atalho: str) -> str | None:
+    for d in _desktop_paths():
+        p = os.path.join(d, nome_atalho)
+        if os.path.exists(p):
+            return p
+    return None
 
-    # Carregar atalho
+
+def _set_shortcut_args(caminho_atalho: str, args: str) -> None:
     shell = win32com.client.Dispatch("WScript.Shell")
-    atalho = shell.CreateShortcut(caminho_atalho)
+    sc = shell.CreateShortcut(caminho_atalho)
 
-    destino_atual = atalho.TargetPath
-    if not destino_atual:
-        messagebox.showerror("Erro",
-                             f"Não foi possível obter o destino do atalho '{nome_atalho}'.")
+    if not sc.TargetPath:
+        raise RuntimeError("Atalho sem destino (TargetPath).")
+
+    sc.Arguments = args
+    sc.Save()
+
+
+def modificar_atalhos(senha: str, nomes_atalhos: list[str]) -> None:
+    if not senha:
+        messagebox.showwarning("Aviso", "Senha vazia. Capture a senha antes de atualizar.")
         return
 
-    # Garante que o caminho esteja entre aspas
-    if not destino_atual.startswith('"') and not destino_atual.endswith('"'):
-        destino_atual = f'"{destino_atual}"'
+    atualizados = []
+    nao_encontrados = []
 
-    atalho.Arguments = senha
-    atalho.save()
+    for nome in nomes_atalhos:
+        caminho = _find_shortcut(nome)
+        if not caminho:
+            nao_encontrados.append(nome)
+            continue
 
-    messagebox.showinfo("Sucesso",
-                        f"A senha foi adicionada ao campo 'Destino' do atalho '{nome_atalho}'.")
+        try:
+            _set_shortcut_args(caminho, senha)
+            atualizados.append(nome)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Falha ao atualizar '{nome}': {e}")
+            return
+
+    if atualizados and nao_encontrados:
+        messagebox.showwarning(
+            "Atualização parcial",
+            "Atualizei:\n- " + "\n- ".join(atualizados) +
+            "\n\nNão encontrei:\n- " + "\n- ".join(nao_encontrados)
+        )
+        return
+
+    if atualizados:
+        messagebox.showinfo(
+            "Sucesso",
+            "Senha aplicada nos atalhos:\n- " + "\n- ".join(atualizados)
+        )
+        return
+
+    messagebox.showerror(
+        "Erro",
+        "Não encontrei nenhum dos atalhos informados no Desktop (local/OneDrive)."
+    )

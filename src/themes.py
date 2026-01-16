@@ -1,6 +1,4 @@
-def alternar_tema(janela, container, card, widgets, entries, botoes, tema_escuro):
-    tema_escuro = not tema_escuro
-
+def aplicar_tema(janela, container, card, widgets, entries, botoes, tema_escuro: bool):
     if tema_escuro:
         bg_janela = "#1f2933"
         bg_card = "#2d2d2d"
@@ -11,7 +9,6 @@ def alternar_tema(janela, container, card, widgets, entries, botoes, tema_escuro
         bg_btn = "#3f3f3f"
         fg_btn = "white"
     else:
-        # 🔹 RESTAURA O LAYOUT ORIGINAL
         bg_janela = "#f4f6f8"
         bg_card = "#ffffff"
         fg_texto = "#111827"
@@ -26,7 +23,7 @@ def alternar_tema(janela, container, card, widgets, entries, botoes, tema_escuro
     container.configure(bg=bg_janela)
     card.configure(bg=bg_card)
 
-    # Labels (tratando tipos diferentes)
+    # Labels
     for lbl in widgets:
         texto = lbl.cget("text")
 
@@ -53,4 +50,12 @@ def alternar_tema(janela, container, card, widgets, entries, botoes, tema_escuro
             activebackground=bg_btn
         )
 
-    return tema_escuro
+
+def alternar_tema(janela, container, card, widgets, entries, botoes, tema_escuro):
+    """
+    Alterna entre claro/escuro e aplica o novo tema.
+    Retorna o novo estado do tema.
+    """
+    novo_tema = not tema_escuro
+    aplicar_tema(janela, container, card, widgets, entries, botoes, novo_tema)
+    return novo_tema

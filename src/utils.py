@@ -1,15 +1,16 @@
 import sys
 import os
 
+
 def resource_path(relative_path):
     """
-    Retorna o caminho absoluto para recursos, considerando se o script foi
-    empacotado com PyInstaller ou não.
+    Retorna o caminho absoluto para recursos,
+    considerando PyInstaller ou execução normal.
     """
     try:
-        # Quando empacotado pelo PyInstaller
-        base_path = sys._MEIPASS
+        base_path = sys._MEIPASS  # type: ignore
     except AttributeError:
-        # Quando executado como script
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+
