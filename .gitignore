@@ -1,0 +1,52 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyd
+*.log
+
+# =========================
+# Ambiente virtual
+# =========================
+venv/
+.venv/
+.env/
+.env.*
+
+# =========================
+# PyInstaller (gerados)
+# =========================
+build/
+dist/
+
+# ✅ (OPCIONAL) ignore o spec só se vocês NÃO usam spec versionado
+# *.spec
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Sistema
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Dados sensíveis / runtime local
+# =========================
+dados_usuario.*
+chave.*
+*.key
+*.dat
+
+# =========================
+# Atalhos do Windows (são do usuário)
+# =========================
+*.lnk

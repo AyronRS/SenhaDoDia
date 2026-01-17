@@ -23,7 +23,7 @@ DARK_DEFAULT = "#3f3f3f"  # cor padrão de botões no modo escuro
 PALETAS = {
     "Roxo": "#4f46e5",
     "Azul": "#2563eb",
-    "Vermelho": "#FF0000",
+    "Vermelho": "#9B111E",
     "Verde": "#16a34a",
     "Laranja": "#f97316",
     "Rosa": "#db2777",
@@ -41,6 +41,8 @@ FONT_SMALL = ("Segoe UI", 8)
 FONT_ICON = ("Segoe UI", 13)
 
 PAD_Y = 2
+PAD_BTN_Y = 8   # espaço vertical entre botões
+PAD_BTN_X = 0   # se quiser espaço lateral extra
 
 # Update
 import update
@@ -465,11 +467,12 @@ def criar_botao(texto, comando, linha):
         cursor="hand2",
         width=28
     )
-    b.grid(row=linha, column=0, columnspan=2, pady=3)
+    b.grid(row=linha, column=0, columnspan=2, pady=(0,PAD_BTN_Y),padx=PAD_BTN_X)
     return b
 
 
 btn_capturar_token = criar_botao("Buscar Token GetCard", capturar_token_getcard, 5)
+btn_capturar_token.grid_configure(pady=(15, PAD_BTN_Y))
 btn_capturar_token_fiserv = criar_botao("Buscar Token Fiserv", capturar_token_fiserv, 6)
 btn_capturar = criar_botao("Buscar Senha do Dia", capturar_senha, 7)
 btn_toggle = criar_botao("Ocultar Senha", toggle_senha_capturada, 8)
@@ -487,7 +490,7 @@ lbl_senha_capturada.grid(row=11, column=0, columnspan=2, pady=5)
 
 lbl_version = tk.Label(
     card,
-    text=f"Versão {CURRENT_VERSION} - Áyron.ZettiTech",
+    text=f"Versão {CURRENT_VERSION} - Áyron.ZettiTech | Alair Filho",
     bg=CARD_COLOR,
     fg=MUTED,
     font=FONT_SMALL
