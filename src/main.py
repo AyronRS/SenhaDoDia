@@ -44,10 +44,6 @@ PAD_Y = 2
 PAD_BTN_Y = 8   # espaço vertical entre botões
 PAD_BTN_X = 0   # se quiser espaço lateral extra
 
-#Update
-#import update
-#update.check_for_update(CURRENT_VERSION)
-
 
 def ui(callable_):
     """Executa algo com segurança no thread do Tk."""
